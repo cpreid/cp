@@ -1,4 +1,4 @@
-# cp
+# cp logger
 simple logging lib for browser 
 
 
