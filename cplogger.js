@@ -3,7 +3,6 @@
     logOnInit = logOnInit instanceof Array ? logOnInit : [];
   
     window.CPLogger = function(initConfig) {
-  
       var enums = {
           INFO: {
             weight: 0,
@@ -21,7 +20,7 @@
             weight: 3
           }
         },
-        elt, scrollElt, isOpen, toggleElt;
+        elt, scrollElt, isOpen, toggleElt, isReady = false;
   
       // initialize
       var config = Object.assign({
@@ -37,13 +36,17 @@
       isOpen = config.open;
   
       var log = function(type, message) {
+        if(!isReady) {
+          logOnInit.push({'level': type, 'msg': message});
+          return;
+        }
         type = type.toLowerCase();
         if (enums[config.LOG_LEVEL.toUpperCase()].weight < enums[type.toUpperCase()].weight) return;
   
         var logEntryElt = document.createElement('div');
         logEntryElt.innerHTML = `${(new Date).toString().replace(/\sGMT.*$/, '')} (${type}): ${message}`;
         logEntryElt.style.cssText = `color: ${enums[type.toUpperCase()].color};padding:3px 0;border-bottom:1px solid #a0a0a017;`;
-        logEntryElt.classList.add(`cp-log-${type}`, 'cp-log');
+        logEntryElt.classList.add(`cp-log-${type}`, 'cp-log');        
         scrollElt.appendChild(logEntryElt);
         scrollElt.scrollTop = scrollElt.scrollHeight;
       }
@@ -86,8 +89,9 @@
           elt.id = config.id;
           elt.style.cssText = `position: fixed;left:0px;width:100%;background:${config.bg};color:#eee;font:${config.font};height:${config.height};z-index:1999;`;
   
-          // create scroller
+          // create scroller          
           scrollElt = document.createElement('div');
+          console.log('+++', scrollElt);
           scrollElt.id = `${config.id}-scroller`;
           scrollElt.style.cssText = 'position:absolute;height:100%;width:100%;overflow-y:scroll;padding:10px;';
           elt.appendChild(scrollElt);
@@ -102,6 +106,10 @@
           else hide();
           document.body && document.body.appendChild(elt);
         }
+        
+        // at the point, the elt exists 
+        isReady = true;
+
         // log statements defined before script was loaded
         logOnInit.forEach(function(entry) {
           log(entry.level, entry.msg);
